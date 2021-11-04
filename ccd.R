@@ -3,6 +3,7 @@ library(tidyverse)
 library(readxl)
 library(here)
 library(gganimate)
+library(cowplot)
 
 ccd_raw <- read_excel(here("data", "Coastalcleanupday_data.xlsx"))
 
@@ -290,7 +291,6 @@ caps2 <- subcat_caps %>%
   theme(legend.position = "none",
         plot.title = element_text(size = 10, face = "bold"))
 caps2
-library(cowplot)
 bottom_caps <- plot_grid(caps2, caps3, labels = c('B', 'C'), label_size = 12, rel_widths = c(1.33,2))
 # png(here("figures", "Fig8_caps.png"), units="in", width=8, height=5, res=300)
 plot_grid(caps1, bottom_caps, labels = c('A', ''), label_size = 12, ncol = 1)
@@ -339,7 +339,7 @@ ccd_formatted2 %>%
 Item_f2 <- factor(ccd_formatted2$Item, levels = c("Straws, Stirrers", "Other Plastic/Foam Packaging", "Lids (Plastic)", "Food Wrappers/Containers", "Cigarettes/Cigarette Filters", "Bottle Caps (Plastic)", "Beverage Bottles (Plastic) 2 liters or less", "Bags PLASTIC - OTHER", "Bags PLASTIC - GROCERY", "Take Out/Away Containers (Plastic)", "Building/Construction Materials", "Take Out/Away Containers (Foam)")) 
 
 # png(here("figures", "Fig9_boxplot.png"), units="in", width=6, height=4, res=300)
-ccd_formatted2 %>%
+ccd_tidy2 %>%
   dplyr::filter(Year > 2012) %>%
   dplyr::filter(Item %in% Item_f2) %>%
   dplyr::mutate(Item_f2 = factor(Item, levels = c("Straws, Stirrers", "Other Plastic/Foam Packaging", "Lids (Plastic)", "Food Wrappers/Containers", "Cigarettes/Cigarette Filters", "Bottle Caps (Plastic)", "Beverage Bottles (Plastic) 2 liters or less", "Bags PLASTIC - OTHER", "Bags PLASTIC - GROCERY", "Take Out/Away Containers (Plastic)", "Building/Construction Materials", "Take Out/Away Containers (Foam)"))) %>%
