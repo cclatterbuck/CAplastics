@@ -118,6 +118,7 @@ boxplot1_data %>%
   # theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
   xlab(NULL) +
   ylab("Count, log10 scale") +
+  ggtitle("Count of top items, 2016-2021") +
   scale_y_log10(labels = scales::comma) +
   annotation_logticks(sides = "bt") +
   coord_flip()
@@ -438,7 +439,7 @@ ggplot(county_medians_norm, aes(x=item, y=rank)) +
   scale_y_reverse() +
   scale_x_discrete(limits=rev(county_top10_norm)) +
   labs(title="Plastic items by zone", 
-       subtitle="Item rank of median yearly counts", 
+       subtitle="Item rank of median normalized yearly counts", 
        caption="source: OC data") +  
   coord_flip() +
   theme_classic()
