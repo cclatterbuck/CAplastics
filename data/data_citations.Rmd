@@ -1,0 +1,11 @@
+---
+title: "Data Citations"
+output: pdf_document
+---
+
+
+| filename | filetype | link | citation |
+|---------:|----------|------|----------|
+| CA_Shoreline.zip | Shapefile | https://earthworks.stanford.edu/catalog/stanford-vx275xn8886 | California. Department of Fish and Game. Marine Resources Region. (2004). Coastline, California, 2000. [Shapefile]. California. Department of Fish and Game. Marine Resources Region. Retrieved from https://earthworks.stanford.edu/catalog/stanford-vx275xn8886 |
+| Coastalcleanupday_data.xlsx | Excel | x | x |
+| OceanConservancy_CA.xlsx | Excel | x | x |
