@@ -14,6 +14,8 @@ library(lubridate)
 library(here)
 library(cowplot)
 library(janitor)
+library(sysfonts)
+font_add_google("Roboto")
 
 ccd_raw <- read_excel(here("data", "Coastalcleanupday_data.xlsx"))
 
@@ -120,12 +122,12 @@ my_theme <- function() {
       theme(legend.position = "none") +
       
       # Format title and axis labels
-      theme(plot.title       = element_text(color=color.text, size=20, face = "bold")) +
-      theme(axis.title.x     = element_text(size=14, color="black", face = "bold")) +
-      theme(axis.title.y     = element_text(size=14, color="black", face = "bold", vjust=1.25)) +
-      theme(axis.text.x      = element_text(size=10, vjust=0.5, hjust=0.5, color = color.text)) +
-      theme(axis.text.y      = element_text(size=10, color = color.text)) +
-      theme(strip.text       = element_text(face = "bold")) +
+      theme(plot.title       = element_text(color=color.text, size=20, face = "bold", family = "Roboto")) +
+      theme(axis.title.x     = element_text(size=14, color="black", face = "bold", family = "Roboto")) +
+      theme(axis.title.y     = element_text(size=14, color="black", face = "bold", vjust=1.25, family = "Roboto")) +
+      theme(axis.text.x      = element_text(size=10, vjust=0.5, hjust=0.5, color = color.text, family = "Roboto")) +
+      theme(axis.text.y      = element_text(size=10, color = color.text, hjust = 0, family = "Roboto")) +
+      theme(strip.text       = element_text(face = "bold", family = "Roboto")) +
       
       # Plot margins
       theme(plot.margin = unit(c(0.35, 0.2, 0.3, 0.35), "cm"))
@@ -138,11 +140,11 @@ ggplot(data = oc_formatted, aes(x = Year, y = rank, group = Item)) +
   geom_point(aes(color = Item, alpha = 1), size = 4) +
   geom_point(color = "#FFFFFF", size = 1) +
   scale_y_reverse(breaks = 1:show.top.n) +
-  scale_x_continuous(breaks = 2016:2021, minor_breaks = 2016:2021, expand = c(.05, .05)) +
+  scale_x_continuous(limits = c(2010, 2028), breaks = 2016:2021, minor_breaks = 2016:2021, expand = c(.05, .05)) +
   geom_text(data = oc_formatted %>% filter(Year == "2016"),
-            aes(label = Item, x = 2016.5) , hjust = .85, fontface = "bold", color = "#888888", size = 4) +
+            aes(label = Item, x = 2015.8) , hjust = 1, fontface = "bold", color = "#888888", size = 4) +
   geom_text(data = oc_formatted %>% filter(Year == "2021"),
-            aes(label = Item, x = 2021.5) , hjust = 0.15, fontface = "bold", color = "#888888", size = 4) +
+            aes(label = Item, x = 2021.2) , hjust = 0, fontface = "bold", color = "#888888", size = 4) +
   coord_cartesian(ylim = c(show.top.n,1)) + 
   theme(legend.position = "none") +
   labs(x = "Year",
