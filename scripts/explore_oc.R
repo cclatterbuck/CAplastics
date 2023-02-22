@@ -11,7 +11,7 @@ library(cowplot)
 library(janitor)
 
 oc_raw <- read_excel(here("data", "OceanConservancy_CA.xlsx"), 
-                     col_types = c("numeric", "text", "text", "text", "numeric", 
+                     col_types = c("numeric", "text", "text", "text", "text", 
                                    "text", "date", "text", "numeric", "numeric",
                                    "numeric", "numeric", "numeric", "numeric", "numeric",
                                    "numeric", "numeric", "numeric", "numeric", "numeric",
