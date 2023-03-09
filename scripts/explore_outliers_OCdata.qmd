@@ -1,0 +1,173 @@
+---
+title: "explore_outliers_OCdata"
+author: "Corey Clatterbuck"
+format: html
+editor: visual
+---
+
+## Purpose
+
+Identify potential outliers in ocean conservancy data that may be due to data entry issues. The identified issues (outlined in issue [#5](https://github.com/cclatterbuck/CAplastics/issues/5#issue-1614464765)) so far include:
+
+1.  Large numbers (\>1000) of `People` and `Adults` for some cleanups
+2.  Some cleanups include just a single trash item or category, including those with large numbers of people
+
+I wanted to visualize how much data is potentially impacted by these issues to better determine how much data to drop.
+
+## Background
+
+## Load data & libraries
+
+```{r, include = FALSE}
+library(tidyverse)
+library(lubridate)
+library(readxl)
+library(here)
+library(janitor)
+
+oc_raw <- read_excel(here("data", "OceanConservancy_CA.xlsx"), 
+                     col_types = c("numeric", "text", "text", "text", "text", 
+                                   "text", "date", "text", "numeric", "numeric",
+                                   "numeric", "numeric", "numeric", "numeric", "numeric",
+                                   "numeric", "numeric", "numeric", "numeric", "numeric",
+                                   "numeric", "numeric", "numeric", "numeric", "numeric",
+                                   "numeric", "numeric", "numeric", "numeric", "numeric",
+                                   "numeric", "numeric", "numeric", "numeric", "numeric",
+                                   "numeric", "numeric", "numeric", "numeric", "numeric",
+                                   "numeric", "numeric", "numeric", "numeric", "numeric",
+                                   "numeric", "numeric", "numeric", "numeric", "numeric",
+                                   "numeric", "numeric", "numeric", "numeric", "numeric",
+                                   "numeric", "numeric", "numeric", "numeric", "numeric",
+                                   "numeric", "numeric", "numeric", "numeric", "numeric"))
+coarse_raw <- read_excel(here("data", "coarse_data_relational_table.xlsx"))
+```
+
+## OC data cleanup
+
+Here I reduce OC data to the dates of Coastal Cleanup Day & remove the columns (plastic types) that we do not use -- these are columns that do not include any plastic items or 'pieces' that are not identifiable to a plastic category. The rows are then filtered to remove any cleanups lacking counts for all plastic categories. This last step removes \~1600 cleanups.
+
+```{r, include = FALSE}
+ccd_dates <- c("2016-09-17", "2017-09-16", "2018-09-15", "2019-09-21", "2021-09-19")
+ccd_dates <- as.Date(ccd_dates)
+oc_use <- oc_raw %>%
+  mutate(`Cleanup Date` = as.Date(`Cleanup Date`)) %>%
+  dplyr::filter(`Cleanup Date` %in% ccd_dates | 
+                  (`Cleanup Date` >= as.Date('2020-09-01') & `Cleanup Date` <= as.Date('2020-09-30')))
+levels(as.factor(oc_use$`Cleanup Date`)) ## double check
+
+oc_use <- oc_use |>
+  dplyr::rename("Fishing Nets" = "Fishing Net & Pieces") |>
+  dplyr::select(-ends_with(c("(Clean Swell)", "Pieces", "Collected"))) |>
+  dplyr::rename("Fishing Net & Pieces" = "Fishing Nets") |>
+  dplyr::filter(!if_all(15:57, is.na))  ## removes ~1600 cleanups
+```
+
+## Bin cleanups by people
+
+Figure:
+
+```{r, echo = FALSE}
+
+# create bins
+oc_use |>
+  dplyr::mutate(people_bin = cut(People, breaks=c(0, 0.99, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 500, 1000, 10000),
+                                 include.lowest = TRUE, right = TRUE,
+                                 labels = c("0", "[1, 5]", "[5, 10]", "[11, 20]", 
+                                            "[21, 30]", "[31, 40]", "[41, 50]",
+                                            "[51, 60]", "[61, 70]", "[71, 80]",
+                                            "[81, 90]", "[91, 100]", "[101, 200]",
+                                            "[201, 300]", "[301, 400]", "[401, 500]",
+                                            "[501, 1000]", "[1001, 10000]"))) |>
+  # group_by(people_bin) |>
+  # summarize(n = n()) |>
+  ggplot(aes(x = people_bin)) +
+  geom_bar() +
+  geom_text(stat='count', aes(label=..count..), vjust=-1) +
+  scale_y_continuous(limits = c(0,6000)) +
+  xlab("volunteers per cleanup effort") +
+  ylab("no. of cleanup efforts") +
+  ggtitle("Cleanups binned by # of volunteers") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+```
+
+## How many cleanups have more people than collected items?
+
+And potentially, what bin do these groups fall in?
+
+```{r, echo = FALSE}
+# remove cleanups with more people than items collected
+oc_test <- oc_use |>
+  dplyr::mutate(total_collected = rowSums(across(15:57), na.rm = TRUE),
+                ratio_collected = round(total_collected/People, 4)) |>
+  relocate(ratio_collected, .after = People) |>
+  dplyr::filter(ratio_collected < 0.9999)
+
+
+# plot
+oc_test |>
+  dplyr::mutate(people_bin = cut(People, breaks=c(0, 0.99, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 500, 1000, 10000),
+                                 include.lowest = TRUE, right = TRUE,
+                                 labels = c("0", "[1, 5]", "[5, 10]", "[11, 20]", 
+                                            "[21, 30]", "[31, 40]", "[41, 50]",
+                                            "[51, 60]", "[61, 70]", "[71, 80]",
+                                            "[81, 90]", "[91, 100]", "[101, 200]",
+                                            "[201, 300]", "[301, 400]", "[401, 500]",
+                                            "[501, 1000]", "[1001, 10000]"))) |>
+  # group_by(people_bin) |>
+  # summarize(n = n()) |>
+  ggplot(aes(x = people_bin)) +
+  geom_bar() +
+  geom_text(stat='count', aes(label=..count..), vjust=-1) +
+  scale_y_continuous(limits = c(0,100)) +
+  xlab("volunteers per cleanup effort") +
+  ylab("no. of cleanup efforts") +
+  ggtitle("Cleanups where volunteers outnumber collected items") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+While most of these cleanups were in groups of few people, note that 13 of 16 cleanups occurring in the \[1001, 10000\] bin also had a item:people ratio \< 1. All item:people ratios less than 1 total 163 cleanups, which is \~2.5% of the data filtered to this point.
+
+For reference, here is a plot of the collected item:people ratios for the remaining data. I remove cleanups where people = 0 in the code chunk as well because `cut` doesn't play nicely with infinite numbers.
+
+```{r, echo = FALSE}
+oc_test2 <- oc_use |>
+  dplyr::mutate(total_collected = rowSums(across(15:57), na.rm = TRUE),
+                ratio_collected = round(total_collected/People, 4)) |>
+  relocate(ratio_collected, .after = People) |>
+  dplyr::filter(ratio_collected > 0.9999) |>
+  dplyr::filter(is.finite(ratio_collected)) ## don't know why I couldn't put these two filter calls together, but it didn't run correctly.
+
+oc_test2 |>
+  dplyr::mutate(ratio_bin = cut(ratio_collected, breaks=10)) |>
+  ggplot(aes(x = ratio_bin)) +
+  geom_bar() +
+  geom_text(stat='count', aes(label=..count..), vjust=-1) +
+  # scale_y_continuous(limits = c(0,100)) +
+  xlab("bins of collected item:volunteer ratio") +
+  ylab("no. of cleanup efforts") +
+  ggtitle("Cleanups where collected items outnumber volunteers") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Summary & next steps
+
+After filtering the OC data to Coastal Cleanup Day dates, we have X cleanups. This was completed in previous scripts but wanted to include here as well. **8143 cleanups**
+
+Remove unidentifiable plastic categories & reduce to cleanups with identifiable items only: -1614, **6529**
+
+Remove cleanups where volunteers outnumber collected items: -163, **6366**
+
+Remove cleanups with 0 people, as you cannot account for effort: -7, **6359**
+
+Here's a breakdown of the number of cleanups by year -- it would be good to get a dataset that includes 2021-2022 if easy for OC folks to accomplish.
+
+```{r, echo = FALSE}
+oc_test2 |>
+  dplyr::mutate(Year = year("Cleanup Date")) |> ## fails?
+ggplot(data = oc_test2) |>
+  geom_bar(x = Year)
+```
