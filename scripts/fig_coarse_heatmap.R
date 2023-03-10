@@ -39,6 +39,24 @@ oc_use <- oc_raw %>%
                   (`Cleanup Date` >= as.Date('2020-09-01') & `Cleanup Date` <= as.Date('2020-09-30')))
 levels(as.factor(oc_use$`Cleanup Date`)) ## double check
 
+## clean outliers from oc data ----
+# see explore_outliers_OCdata.qmd for details
+## remove unidentifiable pieces
+oc_use <- oc_use |>
+  dplyr::rename("Fishing Nets" = "Fishing Net & Pieces") |>
+  dplyr::select(-ends_with(c("(Clean Swell)", "Pieces", "Collected"))) |>
+  dplyr::rename("Fishing Net & Pieces" = "Fishing Nets") |>
+  dplyr::filter(!if_all(15:57, is.na))  ## removes ~1600 cleanups
+
+## remove collected item:people ratio less than one, as well as 0s. Remove cols use to calculate these, if desired 
+oc_use <- oc_use |>
+  dplyr::mutate(total_collected = rowSums(across(15:57), na.rm = TRUE),
+                ratio_collected = round(total_collected/People, 4)) |>
+  relocate(ratio_collected, .after = People) |>
+  dplyr::filter(ratio_collected > 0.9999) |>
+  dplyr::filter(is.finite(ratio_collected)) |>
+  dplyr::select(-total_collected, -ratio_collected)
+
 # wrangle CCD_raw data to long ----
 ## subset relational table for unique ccd plastic items only ----
 coarse_ccd <- coarse_raw |>
@@ -48,7 +66,7 @@ coarse_ccd <- coarse_raw |>
 
 ## make ccd data long & join coarse names ----
 ccd_edit <- ccd_raw %>%
-  dplyr::select(1,3:32) %>%
+  dplyr::select(1,3:30) %>% ## removes 2016 and 2017 data; will use OC data instead
   dplyr::filter(Item != "total") %>%
   remove_empty(which = "rows") %>%
   pivot_longer(!Item, names_to = "Year", values_to = "Count") %>%
@@ -87,7 +105,7 @@ coarse_oc <- coarse_raw |>
 ## NOTE: this does include take out/away containers as a separate category
 colnames(oc_use)
 oc_long <- oc_use %>%
-  dplyr::select(1,2,9,7,11,15:64) %>% ## keep columns to help calculate effort later
+  dplyr::select(1,2,7,9,11,15:57) %>% ## keep columns to help calculate effort later
   remove_empty(which = "rows") %>%
   pivot_longer(!c("Cleanup ID", "Zone", "Adults", "People", "Cleanup Date"), names_to = "Item", values_to = "Count") %>%
   left_join(coarse_oc, by = c("Item" = "oc_name"))
@@ -105,12 +123,12 @@ oc_edit <- oc_long |>
   dplyr::select(Year, Count, used_coarse_name) |>
   group_by(Year, used_coarse_name) |>
   summarize(Count = sum(Count, na.rm=TRUE)) |>
-  ungroup() |>
-  dplyr::filter(Year > 2017) ## ccd already has data through 2017; could replace ccd 2016 and 2017 with oc 2016 and 2017. 
+  ungroup()
+  # dplyr::filter(Year > 2017) ## ccd already has data through 2017; could replace ccd 2016 and 2017 with oc 2016 and 2017. 
 
 
 
-# combine _edit dfs & rank ----
+# counts: combine _edit dfs & rank ----
 ## create df with all coarse categories and years ----
 na_df <- coarse_raw |>
   dplyr::select(used_coarse_name) |>
@@ -130,7 +148,7 @@ fig_df <- ccd_edit |>
   arrange(desc(Year), Rank)
 
 
-# plot ----
+## plot ----
 ## get scale_y_discrete order
 axis_order <- fig_df |>
   group_by(used_coarse_name) |>
@@ -151,10 +169,48 @@ ggplot(fig_df, aes(x = Year, y = used_coarse_name)) +
                                 title = "item rank\nwithin year",
                                 reverse = TRUE))
 
-## combine split categories into coarse categories for figures
-## this will include: food wrappers & take out/away containers; all bottle caps and lids; all cutlery; all bags
-## decide on new column titles; add to data dictionary
-## eliminate clean swell items
+
+# normalized data: combine _edit dfs & rank ----
+## create df with coarse categories and 2016-2021 years ----
+na_df_n <- coarse_raw |>
+  dplyr::select(used_coarse_name) |>
+  distinct() |>
+  slice(rep(1:n(), each = 6)) |> ## seq.int(2016:2021) = 6 years
+  dplyr::mutate(Year = rep(2016:2021, times = 43)) ## 43 used_coarse_names
+
+## normalize data, join with blank df, create ranks ----
+colnames(oc_long)
+fig_df_n <- oc_long |>
+  mutate(Year = year(`Cleanup Date`),
+         n_count = Count/People) |>
+  dplyr::select(Year, n_count, used_coarse_name) |>
+  group_by(Year, used_coarse_name) |>
+  summarize(n_count = sum(n_count, na.rm=TRUE)) |>
+  ungroup() |>
+  right_join(na_df_n, by = c("Year", "used_coarse_name")) |>
+  group_by(Year) |>
+  mutate(Rank = rank(desc(n_count), na.last = "keep", ties.method = "average")) |>
+  ungroup() |>
+  arrange(desc(Year), Rank)
+
+## plot ----
+## heatmap plot
+ggplot(fig_df_n, aes(x = Year, y = used_coarse_name)) +
+  geom_tile(aes(fill = Rank), colour = "white") +
+  scale_fill_continuous(na.value = 'white') +
+  scale_y_discrete(limits = rev(axis_order$used_coarse_name), position = "right") +
+  labs(x = "Year", y = "Collected item category") +
+  coord_fixed() +
+  theme_bw() +
+  guides(fill = guide_colourbar(barwidth = 0.5,
+                                barheight = 15,
+                                title = "item rank\nwithin year",
+                                reverse = TRUE))
+  # theme(legend.position = "none")
+
+
+# combine plots ----
+# use cowplot to combine the plots from counts and normalized data
 
 
 # old code ----
