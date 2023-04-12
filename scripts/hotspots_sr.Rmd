@@ -1,0 +1,246 @@
+---
+title: "Exploratory Hotspot Analysis"
+author: "Sydney Rilum"
+date: "2023-04-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(here)
+library(readxl)
+library(janitor)
+library(tidycensus)
+library(sf)
+library(purrr)
+library(stringr)
+library(tmap)
+
+#census_api_key("9e2f392f2e528a2aa2f46238ae0a192d45b96ad8", install = TRUE) # only need to run this code once
+```
+
+# Read in Data
+
+## Ocean Conservancy Trash Data
+
+### Code from Corey's explore_oc.R script
+```{r}
+# load & clean data
+oc_raw <- read_excel(here("data", "OceanConservancy_CA.xlsx"), 
+                     col_types = c("numeric", "text", "text", "text", "text", 
+                                   "text", "date", "text", "numeric", "numeric",
+                                   "numeric", "numeric", "numeric", "numeric", "numeric",
+                                   "numeric", "numeric", "numeric", "numeric", "numeric",
+                                   "numeric", "numeric", "numeric", "numeric", "numeric",
+                                   "numeric", "numeric", "numeric", "numeric", "numeric",
+                                   "numeric", "numeric", "numeric", "numeric", "numeric",
+                                   "numeric", "numeric", "numeric", "numeric", "numeric",
+                                   "numeric", "numeric", "numeric", "numeric", "numeric",
+                                   "numeric", "numeric", "numeric", "numeric", "numeric",
+                                   "numeric", "numeric", "numeric", "numeric", "numeric",
+                                   "numeric", "numeric", "numeric", "numeric", "numeric",
+                                   "numeric", "numeric", "numeric", "numeric", "numeric"))
+colnames(oc_raw)
+str(oc_raw)
+head(oc_raw)
+```
+
+```{r}
+## keep only Coastal Cleanup Day dates, note Sept. 2020 was "coastal cleanup month"
+ccd_dates <- c("2016-09-17", "2017-09-16", "2018-09-15", "2019-09-21", "2021-09-19")
+ccd_dates <- as.Date(ccd_dates)
+
+oc_use <- oc_raw %>%
+  mutate(`Cleanup Date` = as.Date(`Cleanup Date`)) %>%
+  dplyr::filter(`Cleanup Date` %in% ccd_dates | 
+                  (`Cleanup Date` >= as.Date('2020-09-01') & `Cleanup Date` <= as.Date('2020-09-30')))
+
+levels(as.factor(oc_use$`Cleanup Date`)) ## double check
+```
+
+```{r}
+## remove explicitly non-plastic items and items that cannot be identified
+rm_nonp <- c("Bottle Caps (Metal)", "Beverage Bottles (Glass)", "Beverage Cans", "Paper Bags", "Cups, Plates (Paper)", "Other Plastic/Foam Packaging", "Other Packaging (Clean Swell)", "Other Trash (Clean Swell)", "Personal Hygiene (Clean Swell)", "Foam Pieces", "Glass Pieces", "Plastic Pieces")
+
+oc_use <- oc_use %>%
+  select(-any_of(rm_nonp))
+
+## continue cleaning, exploring & filtering dataset
+oc_use <- janitor::clean_names(oc_use)
+colnames(oc_use)
+str(oc_use)
+n_distinct(oc_use$cleanup_id) ## should equal nobs in oc_use. Cleanup ID can be used as an index column
+```
+
+```{#r}
+## create separate metadata table and tidy table, which removes rows with values = 0
+oc_meta <- oc_use %>%
+  dplyr::select(cleanup_id:number_of_bags)
+
+oc_tidy <- oc_use %>%
+  dplyr::select(cleanup_id, zone, cleanup_date, people, miles, cigarette_butts:gloves_masks_ppe) %>%
+  pivot_longer(cols = cigarette_butts:gloves_masks_ppe, names_to = "item", values_to = "value") %>%
+  drop_na(value)
+oc_tidy$year <- as.numeric(format(oc_tidy$cleanup_date, "%Y"))
+
+## double-check: did this remove rows where no specific items were reported as Sarah K warned on Nov 15?
+zero_rows <- oc_use %>%
+  filter_at(vars(15:52), any_vars(! is.na(.)))
+n_distinct(zero_rows$cleanup_id)
+n_distinct(oc_tidy$cleanup_id) ## if equal, then yes. 
+```
+
+### Sydney's code below
+```{r}
+# create a new sf dataframe that uses GPS column to make geometry for mapping purposes
+oc_sf <- oc_use %>% 
+  # split up gps column into lat and long columns
+  separate(gps, into = c("latitude", "longitude"), sep = ", ", remove = FALSE, extra = "merge") %>%
+  # use lat and long coordinates to create a point geometry column
+  st_as_sf(., coords = c("longitude","latitude"))
+
+head(oc_sf) # check geometry type (hidden)
+```
+
+```{r}
+# set CRS
+st_crs(oc_sf) <- 4269 # EPSG for NAD83
+
+# check CRS
+st_crs(oc_sf)
+```
+
+```{r}
+# map cleanup sites
+ggplot() +
+  geom_sf(data = oc_sf) +
+  theme_minimal() +
+  labs(x = "Longitude",
+       y = "Latitude", 
+       title = "Trash Cleanup Sites")
+```
+
+## Census Tract Data
+
+Use `tidycensus` package to obtain census track data of California.
+```{r}
+# view 2020 census data variables
+var <- load_variables(2020, "pl", cache = TRUE)
+#view(var)
+```
+
+```{r}
+# to cache shapefiles for use in future sessions
+options(tigris_use_cache = TRUE)
+
+# obtain data and feature geometry from the 2020 census (from tidycensus package)
+ca_census <- get_decennial(geography = "tract",
+                           variables = "H1_001N",
+                           year = 2020,
+                           state = "CA",
+                           geometry = TRUE)
+```
+
+```{r}
+# map census tracts
+ggplot() +
+  geom_sf(data = ca_census) +
+  theme_minimal() +
+  labs(x = "Longitude",
+       y = "Latitude", 
+       title = "California 2020 Census Tracts")
+```
+
+```{#r}
+# map census tract population density
+ggplot() +
+  geom_sf(data = ca_census, aes(fill = value), color = "black") +
+  scale_fill_gradientn(colors = c("lightgray","orange","red")) +
+  theme_minimal() +
+  labs(fill = "Census Tract Population",
+       x = "Longitude",
+       y = "Latitude", 
+       title = "California 2020 Census Tracts")
+```
+
+```{r}
+# check CRS (Coordinate Reference System)
+st_crs(ca_census) # NAD83
+st_crs(oc_sf)
+```
+
+
+# Spatial Join
+
+```{r}
+# map trash cleanup sites over census tract outlines
+ggplot() +
+  geom_sf(data = ca_census) +
+  geom_sf(data = oc_sf, color = "blue") +
+  theme_minimal() +
+  labs(x = "Longitude",
+       y = "Latitude", 
+       title = "Trash Cleanup Sites")
+```
+
+Conduct a spatial join of Census tracts (polygons) and Trash Cleanup sites (points).
+```{r}
+# spatial join
+oc_census <- ca_census %>% 
+  st_join(oc_sf)
+```
+
+Determine the number of cleanup sites (points) within each census tract (polygon).
+```{r}
+# count number of points per polygon
+cleanup_counts <- oc_census %>% 
+  count(NAME)
+```
+
+Summary Stats:
+```{r}
+mean(cleanup_counts$n)
+median(cleanup_counts$n)
+max(cleanup_counts$n)
+min(cleanup_counts$n)
+```
+
+```{r}
+unique(cleanup_counts$n)
+```
+
+```{r}
+cleanup_counts1 <- cleanup_counts %>% 
+  filter(n == "1")
+
+count(cleanup_counts1) # 8,178 of 9,129 census tracts have only 1 cleanup site
+```
+
+
+Questions:
+- Census tracks: check that I used the right variable...
+- use 2020 census, or 2022 ACS data??
+
+
+
+
+
+
+
+
+--------------
+
+CA Shoreline shapefile (not needed?)
+```{#r}
+# read in CA shoreline 
+ca_shoreline <- read_sf(here("data","CA_Shoreline","cstlne_simple.shp")) %>% 
+  clean_names()
+```
+
+```{#r}
+ggplot() +
+  geom_sf(data = ca_shoreline)
+```
+
