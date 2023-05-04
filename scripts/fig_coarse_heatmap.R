@@ -39,6 +39,23 @@ oc_use <- oc_raw %>%
                   (`Cleanup Date` >= as.Date('2020-09-01') & `Cleanup Date` <= as.Date('2020-09-30')))
 levels(as.factor(oc_use$`Cleanup Date`)) ## double check
 
+## clean outliers from oc data ----
+# see explore_outliers_OCdata.qmd for details
+## remove unidentifiable pieces
+oc_use <- oc_use |>
+  dplyr::rename("Fishing Nets" = "Fishing Net & Pieces") |>
+  dplyr::select(-ends_with(c("(Clean Swell)", "Pieces", "Collected"))) |>
+  dplyr::rename("Fishing Net & Pieces" = "Fishing Nets") |>
+  dplyr::filter(!if_all(15:57, is.na))  ## removes ~1600 cleanups
+
+## remove collected item:people ratio less than one, as well as 0s. Remove cols use to calculate these, if desired 
+oc_use <- oc_use |>
+  dplyr::mutate(total_collected = rowSums(across(15:57), na.rm = TRUE),
+                ratio_collected = round(total_collected/People, 4)) |>
+  relocate(ratio_collected, .after = People) |>
+  dplyr::filter(ratio_collected > 0.9999) |>
+  dplyr::filter(is.finite(ratio_collected)) |>
+  dplyr::select(-total_collected, -ratio_collected)
 
 # wrangle CCD_raw data to long ----
 ## subset relational table for unique ccd plastic items only ----
@@ -88,7 +105,7 @@ coarse_oc <- coarse_raw |>
 ## NOTE: this does include take out/away containers as a separate category
 colnames(oc_use)
 oc_long <- oc_use %>%
-  dplyr::select(1,2,9,7,11,15:64) %>% ## keep columns to help calculate effort later
+  dplyr::select(1,2,7,9,11,15:57) %>% ## keep columns to help calculate effort later
   remove_empty(which = "rows") %>%
   pivot_longer(!c("Cleanup ID", "Zone", "Adults", "People", "Cleanup Date"), names_to = "Item", values_to = "Count") %>%
   left_join(coarse_oc, by = c("Item" = "oc_name"))
