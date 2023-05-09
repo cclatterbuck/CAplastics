@@ -276,3 +276,46 @@ oc_coarse_norm <- oc_coarse_counts |>
   mutate_at(vars(appliances:totals),~./People) |>
   mutate_at(vars(appliances:totals), round, 3)
 ```
+
+Now let's look at some distributions:
+
+```{r}
+summary(oc_coarse_norm[,6:37])
+
+```
+
+Definitely right-skewed distributions throughout. Let's transform using a log10(x+1) transformation (due to multiple 0s in data) and potentially box-cox transformation. I've never done the latter and I need to know if you should use the same lambda for all variables or not.
+
+The result: data are still quite right-skewed.
+
+```{r}
+oc_coarse_normlog <- oc_coarse_norm |>
+  mutate(across(c("appliances", "toys"), ~log1p(.x)))
+
+summary(oc_coarse_normlog[,6:37]) ## still pretty right-skewed
+
+# log_shap <- lapply(oc_coarse_normlog[,6:37], shapiro.test) ## sample size too large
+
+ggplot(pivot_longer(oc_coarse_normlog[,c(1,6:37)], cols = !`Cleanup ID`), aes(x = value)) +
+  geom_histogram(bins = 10) +
+  facet_wrap(~name)
+
+# outlier_values <- do.call("cbind",lapply(oc_coarse_normlog[,6:37],function(x) boxplot.stats(x)$stats)) ## returns 
+
+outliers <- function(dataframe){
+dataframe %>%
+     select_if(is.numeric) %>% 
+      map(~ boxplot.stats(.x)$out) 
+  
+
+}
+
+try <- outliers(oc_coarse_normlog[,6:37])
+str(try) ## suggests lots of outliers...like, up to 21% for a single variable. 
+sorted_try <- lapply(try,sort)
+min_outliers <- as.data.frame(sapply(sorted_try,"[[",1)) |>
+  rownames_to_column("name") |>
+  setNames(c("name", "min_outlier"))
+view(min_outliers) ## remember, these are the log10(x+1) transformed values
+
+```
