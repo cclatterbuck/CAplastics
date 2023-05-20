@@ -12,13 +12,14 @@ library(tidyverse)
 library(here)
 library(readxl)
 library(janitor)
-library(tidycensus)
+library(tidycensus)   # for census data
+#census_api_key("9e2f392f2e528a2aa2f46238ae0a192d45b96ad8", install = TRUE) # only need to run this code once
 library(sf)
 library(purrr)
 library(stringr)
 library(tmap)
-
-#census_api_key("9e2f392f2e528a2aa2f46238ae0a192d45b96ad8", install = TRUE) # only need to run this code once
+library(sp)       # for data transformation, CRS projection
+library(rgeos)    # for buffering points
 ```
 
 # Read in Data
@@ -127,8 +128,12 @@ ggplot() +
 Use `tidycensus` package to obtain census track data of California.
 ```{r}
 # view 2020 census data variables
-var <- load_variables(2020, "pl", cache = TRUE)
+#var <- load_variables(2020, "pl", cache = TRUE)
 #view(var)
+
+# view 2021 ACS data variables (NOTE: 2022 ACS data not available yet...)
+var_acs <- load_variables(2021, "acs5", cache = TRUE)
+view(var_acs)
 ```
 
 ```{r}
@@ -136,38 +141,46 @@ var <- load_variables(2020, "pl", cache = TRUE)
 options(tigris_use_cache = TRUE)
 
 # obtain data and feature geometry from the 2020 census (from tidycensus package)
-ca_census <- get_decennial(geography = "tract",
-                           variables = "H1_001N",
-                           year = 2020,
-                           state = "CA",
-                           geometry = TRUE)
+#ca_census <- get_decennial(geography = "tract",
+#                           variables = "H1_001N",
+#                           year = 2020,
+#                           state = "CA",
+#                           geometry = TRUE)
+
+# obtain CA census track data and feature geometry from the 2017-2021 5 year ACS (American Community Survey)
+ca_acs <- get_acs(geography = "tract",
+                  survey = "acs5",
+                  variables = "B01003_001", # total population (estimate and MOE/margin-of-error)
+                  year = 2021,
+                  state = "CA",
+                  geometry = TRUE) # obtain geometry
 ```
 
 ```{r}
 # map census tracts
 ggplot() +
-  geom_sf(data = ca_census) +
+  geom_sf(data = ca_acs) +
   theme_minimal() +
   labs(x = "Longitude",
        y = "Latitude", 
-       title = "California 2020 Census Tracts")
+       title = "California 2017-2021 ACS Census Tracts")
 ```
 
 ```{#r}
 # map census tract population density
 ggplot() +
-  geom_sf(data = ca_census, aes(fill = value), color = "black") +
+  geom_sf(data = ca_acs, aes(fill = estimate), color = "black") +
   scale_fill_gradientn(colors = c("lightgray","orange","red")) +
   theme_minimal() +
-  labs(fill = "Census Tract Population",
+  labs(fill = "ACS Census Tract Population Estimates",
        x = "Longitude",
        y = "Latitude", 
-       title = "California 2020 Census Tracts")
+       title = "California 2017-2021 ACS Census Tracts")
 ```
 
 ```{r}
-# check CRS (Coordinate Reference System)
-st_crs(ca_census) # NAD83
+# check CRS (Coordinate Reference System) match
+st_crs(ca_acs) # NAD83
 st_crs(oc_sf)
 ```
 
@@ -177,25 +190,25 @@ st_crs(oc_sf)
 ```{r}
 # map trash cleanup sites over census tract outlines
 ggplot() +
-  geom_sf(data = ca_census) +
+  geom_sf(data = ca_acs) +
   geom_sf(data = oc_sf, color = "blue") +
   theme_minimal() +
   labs(x = "Longitude",
        y = "Latitude", 
-       title = "Trash Cleanup Sites")
+       title = "Coastal Cleanup Sites")
 ```
 
-Conduct a spatial join of Census tracts (polygons) and Trash Cleanup sites (points).
+Conduct a spatial join of ACS Census tracts (polygons) and Trash Cleanup sites (points).
 ```{r}
 # spatial join
-oc_census <- ca_census %>% 
+oc_join <- ca_acs %>% 
   st_join(oc_sf)
 ```
 
 Determine the number of cleanup sites (points) within each census tract (polygon).
 ```{r}
 # count number of points per polygon
-cleanup_counts <- oc_census %>% 
+cleanup_counts <- oc_join %>% 
   count(NAME)
 ```
 
@@ -215,13 +228,130 @@ unique(cleanup_counts$n)
 cleanup_counts1 <- cleanup_counts %>% 
   filter(n == "1")
 
-count(cleanup_counts1) # 8,178 of 9,129 census tracts have only 1 cleanup site
+count(cleanup_counts1) # 8,176 of 9,129 census tracts have only 1 cleanup site
 ```
 
 
-Questions:
-- Census tracks: check that I used the right variable...
-- use 2020 census, or 2022 ACS data??
+# Sept. 2020 "Cleanup Month" 
+
+## Buffering Cleanup locations
+
+```{r}
+# filter for Sept. 2020 cleanup month data
+sept2020 <- oc_sf %>% 
+  filter(cleanup_date >= '2020-09-01' & cleanup_date <= '2020-09-30')
+```
+
+```{r}
+# spatial join
+sept2020_join <- ca_acs %>% 
+  st_join(sept2020) 
+```
+
+```{r}
+st_crs(sept2020_join) #NAD83, ESPG 4269
+```
+
+```{#r}
+# before buffering points, transform data from a geographic CRS (NAD83) to a projected CRS
+
+# projected CRS
+#pcrs <- CRS("+init=epsg:2229")
+##
+pcrs <- CRS("+proj=utm +datum=NAD83 +units=km")
+
+# transform dataset to projected CRS
+transform <- spTransform(sept2020_join, pcrs)
+
+#create booths with 1km buffer
+transform_buffer1km <- gBuffer(transform, byid = TRUE, width = 1, capStyle="ROUND")
+
+
+#sept2020_join <- st_crs(2229)
+#st_crs(sept2020_join)
+```
+
+#?????????????????????????????????????????????work in progress
+
+```{#r}
+# Buffer Sept. 2020 Cleanup Sites
+distm <- 100 # distance in meters
+buffer100m <- gBuffer(sept2020_join, width = 1*distm, byid = TRUE)
+
+# Add data, and write to shapefile
+buffer100m <- SpatialPolygonsDataFrame( buffer100m, data = buffer100m@data )
+writeOGR( buffer100m, "buffer100m", "buffer100m", driver="ESRI Shapefile" ) 
+```
+
+```{#r}
+# To get Statscan CRS, see here:
+# http://spatialreference.org/ref/epsg/3347/
+pc <- spTransform(sept2020_join, CRS("+init=epsg:2229")) 
+
+pc100km <- gBuffer( pc, width=100*distm, byid=TRUE )
+# Add data, and write to shapefile
+pc100km <- SpatialPolygonsDataFrame( pc100km, data=pc100km@data )
+writeOGR( pc100km, "pc100km", "pc100km", driver="ESRI Shapefile" ) 
+```
+
+
+
+### another try
+```{r}
+# convert data frame to sf
+sept2020sites <- st_as_sf(sept2020, coords = "gps")
+
+# convert sp to sf
+#tracts <- st_as_sf(ca_acs)
+
+# add cleanup site coordinate system to tracts
+#st_crs(sept2020sites) = st_crs(ca_acs)
+```
+
+```{r}
+# transform to metric coordinate system and create buffer around each cleanup site by 1 km
+sept2020sites_km = st_transform(sept2020sites, "+proj=longlat +datum=NAD83 +units=km") %>% 
+  st_buffer(dist = units::set_units(1, km))
+
+#tracts_km = st_transform(tracts, "+proj=longlat +datum=NAD83 +units=km")
+```
+
+```{r}
+# view buffered sites for LA county only
+
+la_county <- sept2020sites_km %>% 
+  filter(zone == "Los Angeles County, CA, USA")
+
+la_tracts <- ca_acs %>% 
+  filter(str_detect(NAME, 'Los Angeles'))
+
+ggplot() +
+  geom_sf(data = la_county) 
+```
+
+```{#r}
+# create 1km buffer zone
+sept2020sites_buffer = st_buffer(sept2020sites_km, 1)
+sites_tracts = st_intersection(sept2020sites_buffer, tracts_km)
+```
+
+```{r}
+# how many intersections?
+dim(la_county)
+
+# compute area of intersection
+la_county$area = st_area(la_county)
+
+# count number of times each buffered site overlaps with another buffered site
+la_county$pt_count <- lengths(st_intersects(la_county, la_county))
+la_county$pt_count
+
+
+# ..... maybe make some sort of for loop... when point count is greater than 1, select site with earliest 'cleanup_date' and remove all other overlapping sites???
+```
+
+
+
 
 
 
