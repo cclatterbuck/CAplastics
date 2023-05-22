@@ -243,62 +243,12 @@ sept2020 <- oc_sf %>%
 ```
 
 ```{r}
-# spatial join
-sept2020_join <- ca_acs %>% 
-  st_join(sept2020) 
+# check crs
+st_crs(sept2020) #NAD83, ESPG 4269
 ```
 
 ```{r}
-st_crs(sept2020_join) #NAD83, ESPG 4269
-```
-
-```{#r}
-# before buffering points, transform data from a geographic CRS (NAD83) to a projected CRS
-
-# projected CRS
-#pcrs <- CRS("+init=epsg:2229")
-##
-pcrs <- CRS("+proj=utm +datum=NAD83 +units=km")
-
-# transform dataset to projected CRS
-transform <- spTransform(sept2020_join, pcrs)
-
-#create booths with 1km buffer
-transform_buffer1km <- gBuffer(transform, byid = TRUE, width = 1, capStyle="ROUND")
-
-
-#sept2020_join <- st_crs(2229)
-#st_crs(sept2020_join)
-```
-
-#?????????????????????????????????????????????work in progress
-
-```{#r}
-# Buffer Sept. 2020 Cleanup Sites
-distm <- 100 # distance in meters
-buffer100m <- gBuffer(sept2020_join, width = 1*distm, byid = TRUE)
-
-# Add data, and write to shapefile
-buffer100m <- SpatialPolygonsDataFrame( buffer100m, data = buffer100m@data )
-writeOGR( buffer100m, "buffer100m", "buffer100m", driver="ESRI Shapefile" ) 
-```
-
-```{#r}
-# To get Statscan CRS, see here:
-# http://spatialreference.org/ref/epsg/3347/
-pc <- spTransform(sept2020_join, CRS("+init=epsg:2229")) 
-
-pc100km <- gBuffer( pc, width=100*distm, byid=TRUE )
-# Add data, and write to shapefile
-pc100km <- SpatialPolygonsDataFrame( pc100km, data=pc100km@data )
-writeOGR( pc100km, "pc100km", "pc100km", driver="ESRI Shapefile" ) 
-```
-
-
-
-### another try
-```{r}
-# convert data frame to sf
+# convert data frame to sf object
 sept2020sites <- st_as_sf(sept2020, coords = "gps")
 
 # convert sp to sf
@@ -308,48 +258,105 @@ sept2020sites <- st_as_sf(sept2020, coords = "gps")
 #st_crs(sept2020sites) = st_crs(ca_acs)
 ```
 
+Buffer each clean-up site/point by 500 m
 ```{r}
-# transform to metric coordinate system and create buffer around each cleanup site by 1 km
-sept2020sites_km = st_transform(sept2020sites, "+proj=longlat +datum=NAD83 +units=km") %>% 
-  st_buffer(dist = units::set_units(1, km))
+# before buffering points, transform geographic CRS to a projected CRS (metric coordinate system)
+sept2020sites_buffer = st_transform(sept2020sites, "+proj=longlat +datum=NAD83 +units=m") %>%
+  # create buffer around each cleanup site by 500 m
+  st_buffer(dist = units::set_units(500, m))
 
 #tracts_km = st_transform(tracts, "+proj=longlat +datum=NAD83 +units=km")
 ```
 
+## Map Buffered Clean-up Sites
+
+```{r}
+# set tmap viewing mode to interactive
+tmap_mode("view")
+
+# make a tmap of buffered points/clean-up sites
+tm_shape(sept2020sites_buffer) +
+  tm_dots(col = "sienna2")
+```
+
 ```{r}
 # view buffered sites for LA county only
-
-la_county <- sept2020sites_km %>% 
+la_county <- sept2020sites_buffer %>% 
   filter(zone == "Los Angeles County, CA, USA")
 
-la_tracts <- ca_acs %>% 
-  filter(str_detect(NAME, 'Los Angeles'))
+#la_tracts <- ca_acs %>% 
+#  filter(str_detect(NAME, 'Los Angeles'))
 
+# static map of LA County buffered points
 ggplot() +
   geom_sf(data = la_county) 
+
+# interactive tmap 
+tm_shape(la_county) +
+  tm_dots(col = "sienna2")
 ```
 
-```{#r}
-# create 1km buffer zone
-sept2020sites_buffer = st_buffer(sept2020sites_km, 1)
-sites_tracts = st_intersection(sept2020sites_buffer, tracts_km)
+
+## How many buffered point/clean-up site intersections?
+
+For CA:
+```{r}
+# create a column containing a list of buffered point intersection(s) for each site 
+sept2020sites_buffer$intersections <- st_intersects(sept2020sites_buffer)
+
+# count number of times each buffered site overlaps/intersects with another buffered site
+# i.e. count length of list minus 1, since it includes itself
+sept2020sites_buffer$n_intersections <- (lengths(sept2020sites_buffer$intersections) - 1)
 ```
 
 ```{r}
-# how many intersections?
-dim(la_county)
+# how many buffered clean-up site DO NOT overlap?
+int_count <- sept2020sites_buffer %>% 
+  filter(n_intersections == "0")
 
+count(int_count) # only 568 of 3,829 buffered clean-up sites DO NOT OVERLAP (with a 500 m buffer)
+```
+
+```{r}
+# Summary Stats:
+mean(sept2020sites_buffer$n_intersections)
+median(sept2020sites_buffer$n_intersections)
+max(sept2020sites_buffer$n_intersections)
+min(sept2020sites_buffer$n_intersections)
+```
+
+
+
+
+For LA County only: (smaller dataset purposes)
+```{r}
 # compute area of intersection
 la_county$area = st_area(la_county)
 
-# count number of times each buffered site overlaps with another buffered site
-la_county$pt_count <- lengths(st_intersects(la_county, la_county))
-la_county$pt_count
+# create a column containing a list of buffered point intersection(s) for each site 
+la_county$intersections <- st_intersects(la_county)
+la_county$intersections
+
+# count number of times each buffered site overlaps/intersects with another buffered site
+la_county$n_intersections <- (lengths(la_county$intersections) - 1)
+la_county$n_intersections
 
 
-# ..... maybe make some sort of for loop... when point count is greater than 1, select site with earliest 'cleanup_date' and remove all other overlapping sites???
+# ..... maybe make some sort of for loop... when point count is greater than 0, select site with earliest 'cleanup_date' and remove all other overlapping sites???
 ```
 
+```{r}
+# for loop
+for (i in 1:pt_count(la_county)){
+  
+  # if a buffered point has more than 1 intersection
+  if (la_county$pt_count > 1){
+    
+  } else {
+    
+  }
+}
+```
 
 
 
