@@ -195,6 +195,7 @@ library(lubridate)
 library(readxl)
 library(here)
 library(janitor)
+library(car)
 
 oc_raw <- read_excel(here("data", "OceanConservancy_CA.xlsx"), 
                      col_types = c("numeric", "text", "text", "text", "text", 
@@ -321,7 +322,6 @@ min_outliers <- as.data.frame(sapply(sorted_try,"[[",1)) |>
 view(min_outliers) ## remember, these are the log10(x+1) transformed values
 
 ## view some qqplots of outliers
-library(car)
 qqPlot(oc_coarse_normlog$`cigarettes & filters`)
 qqPlot(oc_coarse_normlog$`cigarettes & filters`, ylim = c(0,4))
 qqPlot(oc_coarse_normlog$`food wrappers & containers`)
@@ -343,7 +343,6 @@ ggplot(pivot_longer(oc_coarse_recip1[,c(1,6:37)], cols = !`Cleanup ID`), aes(x =
   facet_wrap(~name)
 
 ## view some qqplots of outliers
-library(car)
 qqPlot(oc_coarse_recip1$`cigarettes & filters`)
 qqPlot(oc_coarse_recip1$`cigarettes & filters`, ylim = c(0,4))
 qqPlot(oc_coarse_recip1$`food wrappers & containers`)
@@ -364,7 +363,6 @@ ggplot(pivot_longer(oc_coarse_recip2[,c(1,6:37)], cols = !`Cleanup ID`), aes(x =
   facet_wrap(~name)
 
 ## view some qqplots of outliers
-library(car)
 qqPlot(oc_coarse_recip2$`cigarettes & filters`)
 qqPlot(oc_coarse_recip2$`cigarettes & filters`, ylim = c(0,4))
 qqPlot(oc_coarse_recip2$`food wrappers & containers`)
@@ -372,7 +370,8 @@ qqPlot(oc_coarse_recip2$`balloons`)
 qqPlot(oc_coarse_recip2$condoms, ylim = c(0,10))
 ```
 
-### 1/(x^2)
+### 1/(x\^2)
+
 ```{r}
 oc_coarse_recip3 <- oc_coarse_norm |>
   mutate(across(c("appliances", "toys"), ~1/((.x)^2)))
@@ -384,10 +383,56 @@ ggplot(pivot_longer(oc_coarse_recip3[,c(1,6:37)], cols = !`Cleanup ID`), aes(x =
   facet_wrap(~name)
 
 ## view some qqplots of outliers
-library(car)
 qqPlot(oc_coarse_recip3$`cigarettes & filters`)
 qqPlot(oc_coarse_recip3$`cigarettes & filters`, ylim = c(0,4))
 qqPlot(oc_coarse_recip3$`food wrappers & containers`)
 qqPlot(oc_coarse_recip3$`balloons`)
 qqPlot(oc_coarse_recip3$condoms, ylim = c(0,10))
 ```
+
+### Remove 2020 data
+
+```{r}
+## run parts 7-current first
+str(oc_coarse_norm)
+rm_20s_log <- oc_coarse_normlog |>
+  dplyr::filter(`Cleanup Date` < "2020-01-01")
+table(as.factor(rm_20s_log$`Cleanup Date`))
+
+ggplot(pivot_longer(rm_20s_log[,c(1,6:37)], cols = !`Cleanup ID`), aes(x = value)) +
+  geom_histogram(bins = 10) +
+  facet_wrap(~name)
+
+qqPlot(rm_20s_log$`cigarettes & filters`)
+qqPlot(rm_20s_log$`cigarettes & filters`, ylim = c(0,4))
+qqPlot(rm_20s_log$`food wrappers & containers`)
+qqPlot(rm_20s_log$`balloons`)
+qqPlot(rm_20s_log$condoms, ylim = c(0,10))
+
+## try with 1/(x^2) data
+rm_20s_recip3 <- oc_coarse_recip3 |>
+  dplyr::filter(`Cleanup Date` < "2020-01-01")
+table(as.factor(rm_20s_recip3$`Cleanup Date`))
+
+ggplot(pivot_longer(rm_20s_recip3[,c(1,6:37)], cols = !`Cleanup ID`), aes(x = value)) +
+  geom_histogram(bins = 10) +
+  facet_wrap(~name)
+
+qqPlot(rm_20s_recip3$`cigarettes & filters`)
+qqPlot(rm_20s_recip3$`cigarettes & filters`, ylim = c(0,4))
+qqPlot(rm_20s_recip3$`food wrappers & containers`)
+qqPlot(rm_20s_recip3$`balloons`)
+qqPlot(rm_20s_recip3$condoms, ylim = c(0,10))
+
+```
+
+### Is normalized data any good?
+
+Viewing counts of cigarettes & filters from cleanups with the highest normalized counts of this category
+
+```{r}
+tester <- oc_coarse_counts |>
+  dplyr::filter(`Cleanup ID` %in% c("106875", "23205", "6133", "82178", "5130"))
+```
+
+## Umap of 10 most collected plastics categories
