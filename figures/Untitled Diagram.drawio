@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2023-06-19T21:26:40.924Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.43" etag="-nDi8M2WsNO_J4u7qQDv" version="21.5.0" type="github">
+<mxfile host="app.diagrams.net" modified="2023-06-19T21:38:29.621Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.43" etag="WsvwaN2GCpNnm-y1crIl" version="21.5.0" type="github">
   <diagram id="KmVtqLzW4ApFImbiAwLT" name="Page-1">
-    <mxGraphModel dx="1124" dy="718" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="546" dy="349" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="WIyWlLk6GJQsqaUBKTNV-0" />
         <mxCell id="WIyWlLk6GJQsqaUBKTNV-1" parent="WIyWlLk6GJQsqaUBKTNV-0" />
@@ -61,15 +61,9 @@
             <mxPoint x="450" y="520" as="targetPoint" />
             <Array as="points">
               <mxPoint x="240" y="420" />
-              <mxPoint x="410" y="420" />
+              <mxPoint x="430" y="420" />
               <mxPoint x="615" y="420" />
             </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="0ckBEmZJfg3MdC0GSqfd-30" value="" style="endArrow=classic;html=1;rounded=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" edge="1">
-          <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="520" y="423" as="sourcePoint" />
-            <mxPoint x="520" y="460" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="0ckBEmZJfg3MdC0GSqfd-35" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="0ckBEmZJfg3MdC0GSqfd-32" target="0ckBEmZJfg3MdC0GSqfd-34" edge="1">
@@ -94,10 +88,10 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="0ckBEmZJfg3MdC0GSqfd-34" value="spatialdata_01_main.csv" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+        <mxCell id="0ckBEmZJfg3MdC0GSqfd-34" value="spatialdata_01_main.csv&lt;br&gt;n =" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
           <mxGeometry x="100" y="600" width="160" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="0ckBEmZJfg3MdC0GSqfd-36" value="overalldata_01.csv" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+        <mxCell id="0ckBEmZJfg3MdC0GSqfd-36" value="overalldata_01.csv&lt;br&gt;n =" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
           <mxGeometry x="440" y="600" width="160" height="40" as="geometry" />
         </mxCell>
         <mxCell id="0ckBEmZJfg3MdC0GSqfd-38" value="&lt;h1&gt;CA Plastics Data Decisions Flowchart&lt;/h1&gt;&lt;p&gt;This flowchart maps the changes (trapezoids) to the plastics datasets (rounded rectangles) within the repo scripts (near arrows). N refers to the number of rows, equivalent to the number of cleanups, in a tidy dataset. Datasets from the Ocean Conservancy (upper left) are already in tidy format, whereas the Coastal Commission dataset (upper right) provides total counts per year. The flowchart is currently aspirational; however, the team will make the proposed changes to repository and data filtering structure in the coming weeks.&lt;/p&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
@@ -109,7 +103,7 @@
         <mxCell id="Doy-RdufKVe3I3clA72O-0" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;remove: &lt;br&gt;data from year 2020&lt;/font&gt;" style="shape=trapezoid;perimeter=trapezoidPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
           <mxGeometry x="25" y="710" width="125" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="Doy-RdufKVe3I3clA72O-1" value="spatialdata_02_no2020.csv" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+        <mxCell id="Doy-RdufKVe3I3clA72O-1" value="spatialdata_02_no2020.csv&lt;br&gt;n =&amp;nbsp;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
           <mxGeometry x="6.25" y="850" width="162.5" height="40" as="geometry" />
         </mxCell>
         <mxCell id="Doy-RdufKVe3I3clA72O-15" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="Doy-RdufKVe3I3clA72O-2" target="Doy-RdufKVe3I3clA72O-12">
@@ -124,16 +118,22 @@
         <mxCell id="Doy-RdufKVe3I3clA72O-3" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;include data from &lt;br&gt;year 2020 only; remove cleanups after 1st within 1000m buffer&lt;/font&gt;" style="shape=trapezoid;perimeter=trapezoidPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
           <mxGeometry x="455" y="710" width="130" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="Doy-RdufKVe3I3clA72O-12" value="spatialdata_03_2020_500m.csv" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+        <mxCell id="Doy-RdufKVe3I3clA72O-12" value="spatialdata_03_2020_500m.csv&lt;br&gt;n =" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
           <mxGeometry x="205" y="850" width="180" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="Doy-RdufKVe3I3clA72O-13" value="spatialdata_04_2020_1000m.csv" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+        <mxCell id="Doy-RdufKVe3I3clA72O-13" value="spatialdata_04_2020_1000m.csv&lt;br&gt;n =" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
           <mxGeometry x="423.75" y="850" width="192.5" height="40" as="geometry" />
         </mxCell>
         <mxCell id="Doy-RdufKVe3I3clA72O-18" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" target="Doy-RdufKVe3I3clA72O-2">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="295" y="680" as="sourcePoint" />
             <mxPoint x="360" y="490" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Doy-RdufKVe3I3clA72O-20" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" target="0ckBEmZJfg3MdC0GSqfd-4">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="520" y="420" as="sourcePoint" />
+            <mxPoint x="510" y="360" as="targetPoint" />
           </mxGeometry>
         </mxCell>
       </root>
