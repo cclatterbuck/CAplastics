@@ -11,8 +11,8 @@ library(readxl)
 library(here)
 library(janitor)
 
-ccd_raw <- read_excel(here("data", "Coastalcleanupday_data.xlsx"))
-oc_raw <- read_excel(here("data", "OceanConservancy_CA.xlsx"), 
+ccd_raw <- read_excel(here("data", "raw", "Coastalcleanupday_data.xlsx"))
+oc_raw <- read_excel(here("data", "raw", "OceanConservancy_CA.xlsx"), 
                      col_types = c("numeric", "text", "text", "text", "text", 
                                    "text", "date", "text", "numeric", "numeric",
                                    "numeric", "numeric", "numeric", "numeric", "numeric",
@@ -26,7 +26,7 @@ oc_raw <- read_excel(here("data", "OceanConservancy_CA.xlsx"),
                                    "numeric", "numeric", "numeric", "numeric", "numeric",
                                    "numeric", "numeric", "numeric", "numeric", "numeric",
                                    "numeric", "numeric", "numeric", "numeric", "numeric"))
-coarse_raw <- read_excel(here("data", "coarse_data_relational_table.xlsx"))
+coarse_raw <- read_excel(here("data", "raw", "coarse_data_relational_table.xlsx"))
 
 
 
