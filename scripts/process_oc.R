@@ -114,6 +114,15 @@ dupe_rows <- oc_filter |>
 dupe_ids <- unique(dupe_rows$cleanup_id)
 oc_filter <- oc_filter |>
   dplyr::filter(!cleanup_id %in% dupe_ids) ## remove none
+## find duplicate rows based on all cols except cleanup_id & group_name, subset
+subset_d <- oc_filter %>% 
+  group_by_at(vars(-cleanup_id, -group_name)) %>% 
+  filter(n()>1) %>% 
+  ungroup()
+## get the ids of duplicates after the 1st using duplicated() & remove from oc_filter
+dupe_ids2 <- oc_filter[duplicated(oc_filter[!names(oc_filter) %in% c("cleanup_id", "group_name")]),] |>
+  dplyr::pull(cleanup_id)
+oc_filter <- oc_filter[!oc_filter$cleanup_id %in% dupe_ids2,] # removes 383 cleanups
 
 ## remove unidentifiable pieces ----
 oc_filter <- oc_filter |>
@@ -122,7 +131,7 @@ oc_filter <- oc_filter |>
   dplyr::select(-ends_with(c("clean_swell", "pieces", "collected"))) |>
   dplyr::rename("fishing_net_pieces" = "Fishing Nets",
                 "foam_dock_pieces" = "Foam Dock") |>
-  dplyr::filter(!if_all(14:60, is.na))  ## removes 1569 cleanups
+  dplyr::filter(!if_all(14:60, is.na))  ## removes 1466 cleanups
 
 ## remove collected item:people ratio <1 | 0 ---- 
 ## Remove cols use to calculate these, if desired 
@@ -132,7 +141,7 @@ oc_filter <- oc_filter |>
   relocate(ratio_collected, .after = people) |>
   dplyr::filter(ratio_collected > 0.9999) |>
   dplyr::filter(is.finite(ratio_collected)) |>
-  dplyr::select(-total_collected, -ratio_collected) ## removes 1,016 cleanups
+  dplyr::select(-total_collected, -ratio_collected) ## removes 975 cleanups
 
 ## 5. save OC_tidy ----
 write_csv(oc_filter, here("data", "processed" ,"OC_tidy.csv"))
