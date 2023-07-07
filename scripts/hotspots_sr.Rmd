@@ -276,7 +276,7 @@ tmap_mode("view")
 
 # make a tmap of buffered points/clean-up sites
 tm_shape(sept2020sites_buffer) +
-  tm_dots(col = "sienna2")
+  tm_dots(col = "sienna2", alpha = 0.3)
 ```
 
 ```{r}
@@ -293,7 +293,7 @@ ggplot() +
 
 # interactive tmap 
 tm_shape(la_county) +
-  tm_dots(col = "sienna2")
+  tm_dots(col = "sienna2", alpha = 0.4)
 ```
 
 
@@ -344,6 +344,13 @@ la_county$n_intersections
 
 # ..... maybe make some sort of for loop... when point count is greater than 0, select site with earliest 'cleanup_date' and remove all other overlapping sites???
 ```
+
+
+
+
+
+
+
 
 ```{r}
 # for loop
