@@ -1,0 +1,10 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+/dev/
+/figures/archived_figs/
+/data/nul
+/scripts/old/explore_outliers_OCdata_files/
+/scripts/old/explore_outliers_OCdata.html
