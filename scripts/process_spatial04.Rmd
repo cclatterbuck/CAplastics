@@ -1,5 +1,5 @@
 ---
-title: "process_spatial04 - removing cleanups within 1000m buffer"
+title: "process_spatial04 - isolate 2020 data, remove cleanups within 1000m buffer"
 author: "Sydney Rilum"
 date: "2023-07-06"
 output: html_document
@@ -12,14 +12,23 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(here)
 library(janitor)
+
+library(tidycensus)   # for census data
+#census_api_key("9e2f392f2e528a2aa2f46238ae0a192d45b96ad8", install = TRUE) # only need to run this code once
+library(sf)
+library(purrr)
+library(stringr)
+library(tmap)
+library(sp)       # for data transformation, CRS projection
+library(rgeos)    # for buffering points
 ```
 
-# read in processed spatial data
+# Read in processed spatial data
 ```{r}
 spdata_main <- read_csv(here("data", "processed", "spatialdata_01_main.csv"))
 ```
 
-# data wrangling
+# Data wrangling
 
 Remove cleanups after 1st within 1000m buffer
 
@@ -30,7 +39,15 @@ spdata_1000mbuffer <- spdata_main %>%
 
 
 
-# save dataframe as spatialdata_04_2020_1000m).csv
+
+... will paste over code once finalized in process_spatial03.Rmd
+
+
+
+
+
+
+# Save dataframe as spatialdata_04_2020_1000m).csv
 ```{r}
 write_csv(spdata_1000mbuffer, here("data", "processed", "spatialdata_04_2020_1000m.csv"))
 ```
