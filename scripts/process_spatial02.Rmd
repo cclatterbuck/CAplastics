@@ -12,15 +12,6 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(here)
 library(janitor)
-
-library(tidycensus)   # for census data
-#census_api_key("9e2f392f2e528a2aa2f46238ae0a192d45b96ad8", install = TRUE) # only need to run this code once
-library(sf)
-library(purrr)
-library(stringr)
-library(tmap)
-library(sp)       # for data transformation, CRS projection
-library(rgeos)    # for buffering points
 ```
 
 # read in processed spatial data
@@ -30,12 +21,16 @@ spdata_main <- read_csv(here("data", "processed", "spatialdata_01_main.csv"))
 
 # data wrangling
 
-Remove data from the year 2020
-
+Remove clean-up data from the year 2020.
 ```{r}
 spdata_no2020 <- spdata_main %>% 
-  filter()
+  filter(cleanup_date >= as.Date('2020-01-01') & cleanup_date <= as.Date('2020-12-31'))
 ```
+
+
+
+
+
 
 
 
