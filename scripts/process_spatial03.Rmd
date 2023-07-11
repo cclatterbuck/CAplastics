@@ -1,0 +1,36 @@
+---
+title: "process_spatial03 - removing cleanups within 500m buffer"
+author: "Sydney Rilum"
+date: "2023-07-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# read in packages
+library(tidyverse)
+library(here)
+library(janitor)
+```
+
+# read in processed spatial data
+```{r}
+spdata_main <- read_csv(here("data", "processed", "spatialdata_01_main.csv"))
+```
+
+# data wrangling
+
+Remove cleanups after 1st within 500m buffer
+
+```{r}
+spdata_500mbuffer <- spdata_main %>% 
+  filter()
+```
+
+
+
+# save dataframe as spatialdata_03_2020_500m.csv
+```{r}
+write_csv(spdata_500mbuffer, here("data", "processed", "spatialdata_03_2020_500m.csv"))
+```
