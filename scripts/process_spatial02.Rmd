@@ -1,5 +1,5 @@
 ---
-title: "process_spatial02 - removing 2020 data"
+title: "process_spatial02 - removing 2020 clean-up data"
 author: "Sydney Rilum"
 date: "2023-07-06"
 output: html_document
@@ -15,26 +15,26 @@ library(janitor)
 ```
 
 # read in processed spatial data
+
 ```{r}
 spdata_main <- read_csv(here("data", "processed", "spatialdata_01_main.csv"))
 ```
 
 # data wrangling
 
-Remove clean-up data from the year 2020.
 ```{r}
+# remove clean-up data from the year 2020
 spdata_no2020 <- spdata_main %>% 
-  filter(cleanup_date >= as.Date('2020-01-01') & cleanup_date <= as.Date('2020-12-31'))
+  filter(!between(cleanup_date, as.Date('2020-01-01'), as.Date('2020-12-31')))
 ```
 
-
-
-
-
-
-
+```{r}
+# check that no 2020 is present in the data
+unique(spdata_no2020$cleanup_date)
+```
 
 # save dataframe as spatialdata_02_no2020.csv
+
 ```{r}
 write_csv(spdata_no2020, here("data", "processed", "spatialdata_02_no2020.csv"))
 ```
