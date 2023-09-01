@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2023-07-20T23:13:00.713Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.86" etag="04_mAczqYyppSBFTu-XD" version="21.6.1" type="github">
+<mxfile host="app.diagrams.net" modified="2023-09-01T20:52:39.879Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.69" etag="-bpmgSAN2acHhEeOMIs2" version="21.6.8" type="github">
   <diagram id="KmVtqLzW4ApFImbiAwLT" name="Page-1">
-    <mxGraphModel dx="1111" dy="748" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="881" dy="533" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="WIyWlLk6GJQsqaUBKTNV-0" />
         <mxCell id="WIyWlLk6GJQsqaUBKTNV-1" parent="WIyWlLk6GJQsqaUBKTNV-0" />
@@ -104,7 +104,7 @@
         <mxCell id="Doy-RdufKVe3I3clA72O-0" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;remove: &lt;br&gt;data from year 2020&lt;/font&gt;" style="shape=trapezoid;perimeter=trapezoidPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
           <mxGeometry x="25" y="710" width="125" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="Doy-RdufKVe3I3clA72O-1" value="spatialdata_02_no2020.csv&lt;br&gt;n =&amp;nbsp;" style="rounded=1;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+        <mxCell id="Doy-RdufKVe3I3clA72O-1" value="spatialdata_02_no2020.csv&lt;br&gt;n = 5590" style="rounded=1;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
           <mxGeometry x="6.25" y="850" width="162.5" height="40" as="geometry" />
         </mxCell>
         <mxCell id="Doy-RdufKVe3I3clA72O-15" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="Doy-RdufKVe3I3clA72O-2" target="Doy-RdufKVe3I3clA72O-12" edge="1">
@@ -182,13 +182,13 @@
         <mxCell id="6ZiwP4YcPLvlVtugo5Tx-10" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;.Rmd with figures&lt;br&gt;&amp;nbsp;of plastic-inclusive categories&lt;/font&gt;" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
           <mxGeometry x="660" y="600" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="-lXO30SNe0ru9zGjV3W3-0" value="process_spatial02.Rmd" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+        <mxCell id="-lXO30SNe0ru9zGjV3W3-0" value="process_spatial02.Rmd" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
           <mxGeometry x="81" y="800" width="150" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="-lXO30SNe0ru9zGjV3W3-1" value="process_spatial03.Rmd" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+        <mxCell id="-lXO30SNe0ru9zGjV3W3-1" value="process_spatial03.Rmd" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
           <mxGeometry x="289" y="800" width="150" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="-lXO30SNe0ru9zGjV3W3-2" value="process_spatial04.Rmd" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+        <mxCell id="-lXO30SNe0ru9zGjV3W3-2" value="process_spatial04.Rmd" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
           <mxGeometry x="514" y="800" width="150" height="30" as="geometry" />
         </mxCell>
       </root>
