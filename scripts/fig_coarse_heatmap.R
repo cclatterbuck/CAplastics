@@ -26,7 +26,7 @@ oc_raw <- read_excel(here("data", "raw", "OceanConservancy_CA.xlsx"),
                                    "numeric", "numeric", "numeric", "numeric", "numeric",
                                    "numeric", "numeric", "numeric", "numeric", "numeric",
                                    "numeric", "numeric", "numeric", "numeric", "numeric"))
-coarse_raw <- read_excel(here("data", "raw", "coarse_data_relational_table.xlsx"))
+coarse_raw <- read_excel(here("data", "processed", "coarse_data_relational_table.xlsx"))
 
 
 
@@ -156,7 +156,7 @@ axis_order <- fig_df |>
             max_count = sum(Count, na.rm=TRUE)) |>
   arrange(desc(max_count))
 
-## heatmap plot
+## heatmap plot (Orignial plot)
 ggplot(fig_df, aes(x = Year, y = used_coarse_name)) +
   geom_tile(aes(fill = Rank), colour = "white") +
   scale_fill_continuous(na.value = 'white') +
@@ -169,6 +169,39 @@ ggplot(fig_df, aes(x = Year, y = used_coarse_name)) +
                                 title = "item rank\nwithin year",
                                 reverse = TRUE))
 
+#ggsave(filename="coarse_heatmap.jpeg", path = "figures")
+
+
+## heatmap plot (red to blue)
+ggplot(fig_df, aes(x = Year, y = used_coarse_name)) +
+  scale_fill_gradient(low="red", high="blue", na.value = "white", guide="colorbar") +
+  geom_tile(aes(fill = Rank), colour = "white") +
+  scale_y_discrete(limits = rev(axis_order$used_coarse_name)) +
+  labs(x = "Year", y = "Collected item category") +
+  coord_fixed() +
+  theme_bw() +
+  guides(fill = guide_colourbar(barwidth = 0.5,
+                                barheight = 15,
+                                title = "item rank\nwithin year",
+                                reverse = TRUE))
+
+ggsave(filename="coarse_heatmap_redblue.jpeg", path = "figures")
+
+
+## heatmap plot (blue to yellow)
+ggplot(fig_df, aes(x = Year, y = used_coarse_name)) +
+  geom_tile(aes(fill = Rank), colour = "white") +
+  scale_y_discrete(limits = rev(axis_order$used_coarse_name)) +
+  labs(x = "Year", y = "Collected item category") +
+  coord_fixed() +
+  theme_bw() +
+  scale_fill_viridis_c(direction = 1, na.value = "white") +
+  guides(fill = guide_colourbar(barwidth = 0.5,
+                                barheight = 15,
+                                title = "item rank\nwithin year",
+                                reverse = TRUE))
+
+ggsave(filename="coarse_heatmap_yellowblue.jpeg", path = "figures")
 
 
 ## combine split categories into coarse categories for figures
